@@ -1,0 +1,151 @@
+# =============================================================================
+# PYTHON
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# =============================================================================
+# VIRTUAL ENVIRONMENTS
+# =============================================================================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# =============================================================================
+# JUPYTER / JUPYTEXT
+# =============================================================================
+# Игнорируем ipynb, так как Jupytext синхронизирует их с .py
+*.ipynb
+.ipynb_checkpoints
+.jupytext.toml
+.history
+.ipython/
+
+# =============================================================================
+# MACHINE LEARNING / DEEP LEARNING
+# =============================================================================
+runs/
+logs/
+lightning_logs/
+*.log
+
+*.pth
+*.pt
+*.bin
+*.h5
+*.hdf5
+*.onnx
+*.pb
+checkpoints/
+saved_models/
+weights/
+
+data/
+datasets/
+*.csv
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+*.jpg
+*.jpeg
+*.png
+*.bmp
+*.tif
+*.tiff
+!/.gitkeep
+
+# =============================================================================
+# IDE / EDITORS
+# =============================================================================
+.vscode/
+*.code-workspace
+.code-workspace
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# =============================================================================
+# OS / SYSTEM
+# =============================================================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+*~
+.fuse_hidden*
+.trash-*
+.nfs*
+
+# =============================================================================
+# SECRETS
+# =============================================================================
+.env
+.env.local
+.env.*.local
+*.env
+secrets.json
+credentials.json
+config.local.json
+config.private.json
+*.pem
+*.key
+id_rsa
+id_rsa.pub
+known_hosts
+.ssh/
+
+# =============================================================================
+# COLAB SPECIFIC
+# =============================================================================
+drive/
+gcs/
+.session
+.tmp/
+.temp/
+
+# =============================================================================
+# PROJECT DATA
+# =============================================================================
+images/
+annotations/
+raw_data/
+processed_data/
+tb_logs/
