@@ -1,6 +1,4 @@
-# =============================================================================
-# PYTHON
-# =============================================================================
+# Python
 __pycache__/
 *.py[cod]
 *$py.class
@@ -22,9 +20,7 @@ wheels/
 .installed.cfg
 *.egg
 
-# =============================================================================
-# VIRTUAL ENVIRONMENTS
-# =============================================================================
+# Virtual Environments
 .env
 .venv
 env/
@@ -35,24 +31,24 @@ venv.bak/
 pip-log.txt
 pip-delete-this-directory.txt
 
-# =============================================================================
-# JUPYTER / JUPYTEXT
-# =============================================================================
-# Игнорируем ipynb, так как Jupytext синхронизирует их с .py
+# Jupyter / Jupytext
 *.ipynb
 .ipynb_checkpoints
 .jupytext.toml
 .history
 .ipython/
 
-# =============================================================================
-# MACHINE LEARNING / DEEP LEARNING
-# =============================================================================
+# TensorBoard / PyTorch Lightning
 runs/
 logs/
 lightning_logs/
+tb_logs/
+*.tfevents.*
+events.out.tfevents.*
+tensorboard/
 *.log
 
+# Models & Checkpoints
 *.pth
 *.pt
 *.bin
@@ -64,6 +60,7 @@ checkpoints/
 saved_models/
 weights/
 
+# Data & Images
 data/
 datasets/
 *.csv
@@ -72,7 +69,6 @@ datasets/
 *.tar.gz
 *.rar
 *.7z
-
 *.jpg
 *.jpeg
 *.png
@@ -81,9 +77,7 @@ datasets/
 *.tiff
 !/.gitkeep
 
-# =============================================================================
-# IDE / EDITORS
-# =============================================================================
+# IDE / Editors
 .vscode/
 *.code-workspace
 .code-workspace
@@ -92,9 +86,7 @@ datasets/
 *.ipr
 *.iws
 
-# =============================================================================
-# OS / SYSTEM
-# =============================================================================
+# OS / System
 Thumbs.db
 ehthumbs.db
 Desktop.ini
@@ -114,9 +106,7 @@ $RECYCLE.BIN/
 .trash-*
 .nfs*
 
-# =============================================================================
-# SECRETS
-# =============================================================================
+# Secrets
 .env
 .env.local
 .env.*.local
@@ -132,20 +122,15 @@ id_rsa.pub
 known_hosts
 .ssh/
 
-# =============================================================================
-# COLAB SPECIFIC
-# =============================================================================
+# Colab Specific
 drive/
 gcs/
 .session
 .tmp/
 .temp/
 
-# =============================================================================
-# PROJECT DATA
-# =============================================================================
+# Project Specific
 images/
 annotations/
 raw_data/
 processed_data/
-tb_logs/

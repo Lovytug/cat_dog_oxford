@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from tblogger import TBLogger
+from tools.tblogger import TBLogger
 
 class ModelTrainer:
 

@@ -25,11 +25,11 @@ from torchvision import transforms
 
 # %%
 
-from dataset_dataloader import CreaterTrainValDataset, CreaterDataloader
+from tools.dataset_dataloader import CreaterTrainValDataset, CreaterDataloader
 from models.baseline import BaselineModel
-from trainer import ModelTrainer
-from tblogger import TBLogger
-from util import PROJECT_ROOT
+from tools.trainer import ModelTrainer
+from tools.tblogger import TBLogger
+from util.util import PROJECT_ROOT
 
 # %%
 
