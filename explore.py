@@ -33,6 +33,32 @@ from util.util import PROJECT_ROOT
 
 # %%
 
+import argparse
+from pathlib import Path
+
+# %%
+
+def parse_args():
+    parser = argparse.ArgumentParser()
+    
+    parser.add_argument("--images_dir", type=str, required=True,
+                        help="Path to images directory")
+    parser.add_argument("--annotations_dir", type=str, required=True,
+                        help="Path to annotations directory")
+    parser.add_argument("--batch_size", type=int, default=32)
+    parser.add_argument("--epochs", type=int, default=5)
+    parser.add_argument("--log_dir", type=str, default="runs/exp")
+
+    return parser.parse_args()
+
+# %%
+args = parse_args()
+
+images_path = Path(args.images_dir)
+annotations_path = Path(args.annotations_dir)
+
+# %%
+
 size_img = (224, 224)
 
 train_transform = transforms.Compose([
@@ -46,12 +72,6 @@ val_transform = transforms.Compose([
 ])
     
 # %%
-
-
-
-# Строим пути относительно корня
-images_path = PROJECT_ROOT / "images"
-annotations_path = PROJECT_ROOT / "annotations"
 
 creater_dataset = CreaterTrainValDataset(
     images_dir=images_path,
