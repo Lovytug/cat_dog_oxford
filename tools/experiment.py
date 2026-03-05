@@ -114,7 +114,7 @@ class Experiment:
         return {
             "batch_size": self.batch_size,
             "epochs": epochs,
-            "img_size": self.size_img,
+            "img_size": str(self.size_img),
             "optimizer": self.optimizer.__class__.__name__,
             "lr": self.optimizer.param_groups[0]["lr"],
             "model": self.model.__class__.__name__
