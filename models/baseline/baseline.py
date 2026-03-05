@@ -1,6 +1,10 @@
 from torch import nn
 
-class BaselineModel(nn.Module):
+class ShortBaselineModel(nn.Module):
+    """
+        Неглубокая сеть сверточная сеть из трех сверток.
+        Нет вспомогательных слоев
+    """
 
     def __init__(self):
         super().__init__()
@@ -19,16 +23,12 @@ class BaselineModel(nn.Module):
 
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.relu(x)
-        x = self.pool(x)
 
-        x = self.conv2(x)
-        x = self.relu(x)
-        x = self.pool(x)
+        x = self.pool(self.relu(self.conv1(x)))
 
-        x = self.conv3(x)
-        x = self.relu(x)
+        x = self.pool(self.relu(self.conv2(x)))
+
+        x = self.conv3(self.relu(x))
 
         x = self.adaptive_pool(x)
 
@@ -37,5 +37,66 @@ class BaselineModel(nn.Module):
         x = self.fc1(x)
         x = self.relu(x)
         logits = self.fc2(x)
+
+        return logits
+    
+
+class DeepBaselineModel(nn.Module):
+    """
+        Глубокая сверточная сеть из трех блоков, по двум сверточным слоям.
+        Нет вспомогательных слоев
+    """
+
+    def __init__(self):
+        super().__init__()
+
+        self.block1 = nn.Sequential(
+            nn.Conv2d(3, 32, 3, padding=1),
+            nn.ReLU(),
+
+            nn.Conv2d(32, 32, 3, padding=1),
+            nn.ReLU(),
+
+            nn.MaxPool2d(2)
+        )
+
+        self.block2 = nn.Sequential(
+            nn.Conv2d(32, 64, 3, padding=1),
+            nn.ReLU(),
+
+            nn.Conv2d(64, 64, 3, padding=1),
+            nn.ReLU(),
+
+            nn.MaxPool2d(2)
+        )
+
+        self.block3 = nn.Sequential(
+            nn.Conv2d(64, 128, 3, padding=1),
+            nn.ReLU(),
+
+            nn.Conv2d(128, 128, 3, padding=1),
+            nn.ReLU(),
+
+            nn.MaxPool2d(2)
+        )
+
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
+
+        self.flatten = nn.Flatten()
+
+        self.fc = nn.Linear(128, 37)
+
+
+    def forward(self, x):
+
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.block3(x)
+
+        x = self.adaptive_pool(x)
+
+        x = self.flatten(x)
+
+        logits = self.fc(x)
 
         return logits
