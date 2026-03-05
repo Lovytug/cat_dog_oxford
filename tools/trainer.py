@@ -56,8 +56,8 @@ class ModelTrainer:
             self._save_last_val_loss_metric(loss=val_loss, metric=val_met)
 
     def _save_last_val_loss_metric(self, loss, metric):
-        self.last_val_loss = loss
-        self.last_val_metric = metric
+        self._last_val_loss = loss
+        self._last_val_metric = metric
 
     
     def predict(self, dataloader: DataLoader):
