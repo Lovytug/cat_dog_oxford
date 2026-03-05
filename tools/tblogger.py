@@ -26,7 +26,7 @@ class TBLogger:
         total_norm = 0.0
         for name, param in model.named_parameters():
             if param.grad is not None: # смотрим только на НЕ замороженные слои
-                grad_norm = param.data.data.norm(2)
+                grad_norm = param.grad.data.norm(2)
                 total_norm += grad_norm.item()
 
                 self.writer.add_histogram(
@@ -35,11 +35,11 @@ class TBLogger:
                     epoch
                 )
 
-                self.writer.add_scalar(
-                    "GradNorm/total",
-                    total_norm,
-                    epoch
-                )
+        self.writer.add_scalar(
+            "GradNorm/total",
+            total_norm,
+            epoch
+        )
 
 
     def log_weights(self, model: nn.Module, epoch: int):
@@ -49,6 +49,10 @@ class TBLogger:
                 param.data,
                 epoch
             )
+
+
+    def log_hparams(self, hparams: dict, metrics: dict):
+        self.writer.add_hparams(hparam_dict=hparams, metric_dict=metrics)
 
     
     def close(self):

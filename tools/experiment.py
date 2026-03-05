@@ -2,7 +2,7 @@ import torch
 from pathlib import Path
 
 from tools.dataset_dataloader import CreaterTrainValDataset, CreaterDataloader
-from models.baseline import BaselineModel
+from models.baseline.baseline import BaselineModel
 from tools.trainer import ModelTrainer
 from tools.tblogger import TBLogger
 from tools.transformer_builder import TransformBuilder
@@ -98,5 +98,25 @@ class Experiment:
             train_loader=self.train_loader,
             val_loader=self.val_loader
         )
-        if self.logger is not None:
+
+        if self.logger:
+            hparams = self.collect_hparams(epochs)
+
+            metrics = {
+                "hparam/final_val_acc": self.trainer.val_metric,
+                "hparam/final_val_loss": self.trainer.val_loss
+            }
+            self.logger.log_hparams(hparams, metrics)
             self.logger.close()
+
+
+    def collect_hparams(self, epochs):
+
+        return {
+            "batch_size": self.batch_size,
+            "epochs": epochs,
+            "img_size": self.size_img,
+            "optimizer": self.optimizer.__class__.__name__,
+            "lr": self.optimizer.param_groups[0]["lr"],
+            "model": self.model.__class__.__name__
+        }

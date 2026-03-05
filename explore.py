@@ -21,9 +21,12 @@ import numpy as np
 import torch
 from torch import nn
 
-from models.baseline import BaselineModel
+from models.baseline.baseline import BaselineModel
 
 from tools.experiment import Experiment
+
+# %%[markdown]
+# Команда чтобы настраивать пути (изображений и анотации) во время запуска консоли
 
 # %%
 
@@ -46,10 +49,16 @@ args = parse_args()
 images_path = Path(args.images_dir)
 annotations_path = Path(args.annotations_dir)
 
+# %%[markdown]
+### Эксперименты
+# Далее производятся эксперименты по моделям
+
+# %%[markdown]
+# Для начала рассмотрим какие результаты даст сырая модель
+
 # %%
-print("nen")
 model = BaselineModel()
-optimizer = torch.optim.Adam(model.parameters())
+optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 criterion = nn.CrossEntropyLoss()
 
 expirement_1 = Experiment(
@@ -59,8 +68,6 @@ expirement_1 = Experiment(
 
 expirement_1.setup_transforms()
 expirement_1.setup_data()
-expirement_1.setup_logger()
+expirement_1.setup_logger(log_dir="runs/exp_001_vanila_baseline")
 expirement_1.setup_model(model, optimizer, criterion)
 expirement_1.run()
-
-# %%

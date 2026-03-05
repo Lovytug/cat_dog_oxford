@@ -19,6 +19,18 @@ class ModelTrainer:
         self.device = device
         self.logger = logger
 
+        self._last_val_metric = None
+        self._last_val_loss = None
+
+    
+    @property
+    def val_loss(self):
+        return self._last_val_loss
+    
+    @property
+    def val_metric(self):
+        return self._last_val_metric
+
 
     def train(self, num_epochs: int, train_loader: DataLoader, val_loader: DataLoader):
         
@@ -40,6 +52,12 @@ class ModelTrainer:
                 f"train: loss {train_loss:.4f}, acc {train_met:.4f} -> "
                 f"val: loss {val_loss:.4f}, acc {val_met:.4f}"
             )
+
+            self._save_last_val_loss_metric(loss=val_loss, metric=val_met)
+
+    def _save_last_val_loss_metric(self, loss, metric):
+        self.last_val_loss = loss
+        self.last_val_metric = metric
 
     
     def predict(self, dataloader: DataLoader):
