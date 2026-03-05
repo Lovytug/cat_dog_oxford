@@ -2,7 +2,6 @@ import torch
 from pathlib import Path
 
 from tools.dataset_dataloader import CreaterTrainValDataset, CreaterDataloader
-from models.baseline.baseline import BaselineModel
 from tools.trainer import ModelTrainer
 from tools.tblogger import TBLogger
 from tools.transformer_builder import TransformBuilder
