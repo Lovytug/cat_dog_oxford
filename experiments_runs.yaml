@@ -1,0 +1,25 @@
+
+experiments:
+  short_baseline:
+    run: true
+    model: "ShortBaselineModel"
+    lr: 0.001
+    weight_decay: 0.0  
+    epochs: 5
+    log_dir: "runs/exp_001_short_baseline"
+
+  deep_baseline:
+    run: true
+    model: "DeepBaselineModel"
+    lr: 0.0001
+    weight_decay: 0.0  
+    epochs: 10
+    log_dir: "runs/exp_002_deep_baseline"
+
+  modern_v1:
+    run: false
+    model: "ModernDeepModel"
+    lr: 0.0003
+    weight_decay: 0.0
+    epochs: 20
+    log_dir: "runs/exp_003_modern_v1"

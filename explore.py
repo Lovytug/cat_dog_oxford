@@ -16,6 +16,7 @@
 # %%
 import argparse
 from pathlib import Path
+import yaml
 
 import numpy as np
 import torch
@@ -33,24 +34,30 @@ from experiment.experiment_tracker import ExperimentTracker
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    
-    parser.add_argument("--images_dir", type=str, required=True,
-                        help="Path to images directory")
-    parser.add_argument("--annotations_dir", type=str, required=True,
-                        help="Path to annotations directory")
-    parser.add_argument("--batch_size", type=int, default=32)
-    parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--log_dir", type=str, default="runs/exp")
-
+    parser.add_argument("--images_dir", type=str, required=True)
+    parser.add_argument("--annotations_dir", type=str, required=True)
+    parser.add_argument("--config", type=str, default="experiments_runs.yaml")
+    parser.add_argument("--experiment", type=str, default="all",
+                        help="Run specific experiment or 'all'")
     return parser.parse_args()
+
+# %%
+
+def get_model(model_name: str):
+
+    models = {
+        "ShortBaselineModel": ShortBaselineModel,
+        "DeepBaselineModel": DeepBaselineModel,
+    }
+    if model_name not in models:
+        raise ValueError(f"Unknown model: {model_name}")
+    return models[model_name]()
 
 # %%
 args = parse_args()
 
-images_path = Path(args.images_dir)
-annotations_path = Path(args.annotations_dir)
-
-# %%
+with open(args.config, "r", encoding="utf-8") as f:
+    config = yaml.safe_load(f)
 
 tracker = ExperimentTracker(file_path="result/result.csv")
 
@@ -58,42 +65,42 @@ tracker = ExperimentTracker(file_path="result/result.csv")
 ### Эксперименты
 # Далее производятся эксперименты по моделям
 
-# %%[markdown]
-# Для начала рассмотрим какие результаты даст сырая неглубокая сеть
-# и глубокая сеть, где они будут без сложной аугоментации и доп слоев
-
 # %%
-model = ShortBaselineModel()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
-criterion = nn.CrossEntropyLoss()
+for exp_name, exp_config in config["experiments"].items():
 
-expirement_1 = Experiment(
-    images_dir=images_path,
-    annotations_dir=annotations_path
-)
+    # Пропускаем если не этот эксперимент
+    if args.experiment != "all" and args.experiment != exp_name:
+        continue
+    
+    # Пропускаем если run: false
+    if not exp_config.get("run", True):
+        print(f"⏭️  Пропускаем {exp_name}")
+        continue
+    
+    print(f"\n🔬 Осуществляется запуск: {exp_name}")
+    
 
-expirement_1.setup_transforms()
-expirement_1.setup_data()
-expirement_1.setup_logger(log_dir="runs/exp_001_vanila_short_baseline")
-expirement_1.setup_model(model, optimizer, criterion)
-result = expirement_1.run(epochs=1)
+    model = get_model(exp_config["model"])
+    
+    optimizer = torch.optim.Adam(
+        model.parameters(), 
+        lr=exp_config["lr"],
+        weight_decay=exp_config.get("weight_decay", 0.0)
+    )
+    
+    criterion = nn.CrossEntropyLoss()
 
-tracker.save(result)
-
-# %%
-model = DeepBaselineModel()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-criterion = nn.CrossEntropyLoss()
-
-expirement_2 = Experiment(
-    images_dir=images_path,
-    annotations_dir=annotations_path
-)
-
-expirement_2.setup_transforms()
-expirement_2.setup_data()
-expirement_2.setup_logger(log_dir="runs/exp_002_vanila_deep_baseline")
-expirement_2.setup_model(model, optimizer, criterion)
-result = expirement_2.run()
-
-tracker.save(result)
+    experiment = Experiment(
+        images_dir=Path(args.images_dir),
+        annotations_dir=Path(args.annotations_dir)
+    )
+    
+    experiment.setup_transforms()
+    experiment.setup_data()
+    experiment.setup_logger(log_dir=exp_config["log_dir"])
+    experiment.setup_model(model, optimizer, criterion)
+    
+    result = experiment.run(epochs=exp_config["epochs"])
+    tracker.save(result)
+    
+    print(f"✅ {exp_name} завершена!")
