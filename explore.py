@@ -21,8 +21,9 @@ import yaml
 import numpy as np
 import torch
 from torch import nn
+from torchvision import transforms
 
-from models.baseline.baseline import ShortBaselineModel, DeepBaselineModel
+from models.baseline.vanila.baseline import ShortBaselineModel, DeepBaselineModel
 
 from experiment.experiment import Experiment
 from experiment.experiment_tracker import ExperimentTracker
@@ -64,6 +65,15 @@ tracker = ExperimentTracker(file_path="result/result.csv")
 # %%[markdown]
 ### Эксперименты
 # Далее производятся эксперименты по моделям
+
+# %%[markdown]
+# Трансформер для аугментации трейна. Применяется ко всем экпериментам один и тот же
+
+# %%
+
+train_transormer = transforms.Compose([
+
+])
 
 # %%
 for exp_name, exp_config in config["experiments"].items():
