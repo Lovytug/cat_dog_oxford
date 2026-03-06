@@ -1,6 +1,7 @@
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from torch import nn
+from dataclasses import asdict
 
 class TBLogger:
 
@@ -18,8 +19,15 @@ class TBLogger:
     ):
         self.writer.add_scalar("Loss/train", train_loss, epoch)
         self.writer.add_scalar("Loss/val", val_loss, epoch)
-        self.writer.add_scalar("Metric/train", train_metric, epoch)
-        self.writer.add_scalar("Metric/val", val_metric, epoch)
+
+        train_dict = asdict(train_metric)
+        val_dict = asdict(val_metric)
+
+        for name, value in train_dict.items():
+            self.writer.add_scalar(f"Train/{name}", value, epoch)
+
+        for name, value in val_dict.items():
+            self.writer.add_scalar(f"Val/{name}", value, epoch)
 
 
     def log_gradients(self, model: nn.Module, epoch: int):
@@ -51,7 +59,7 @@ class TBLogger:
             )
 
 
-    def log_hparams(self, hparams: dict, metrics: dict):
+    def log_hparams(self, hparams: dict, metrics):
         self.writer.add_hparams(hparam_dict=hparams, metric_dict=metrics)
 
     

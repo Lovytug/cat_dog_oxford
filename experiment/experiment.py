@@ -6,6 +6,7 @@ from tools.trainer import ModelTrainer
 from tools.tblogger import TBLogger
 from tools.transformer_builder import TransformBuilder
 
+from experiment.experiment_config import ExperimentResult
 
 class Experiment:
 
@@ -98,15 +99,27 @@ class Experiment:
             val_loader=self.val_loader
         )
 
+        result = ExperimentResult(
+            experiment_name=self.logger.writer.log_dir,
+            model_name=self.model.__class__.__name__,
+            val_metrics=self.trainer.val_metric,
+            val_loss=self.trainer.val_loss,
+            epochs=epochs,
+            lr=self.optimizer.param_groups[0]["lr"],
+            batch_size=self.batch_size
+        )
+
         if self.logger:
             hparams = self.collect_hparams(epochs)
 
             metrics = {
-                "hparam/final_val_acc": self.trainer.val_metric,
+                "hparam/final_val_acc": self.trainer.val_metric.accuracy,
                 "hparam/final_val_loss": self.trainer.val_loss
             }
             self.logger.log_hparams(hparams, metrics)
             self.logger.close()
+
+        return result
 
 
     def collect_hparams(self, epochs):

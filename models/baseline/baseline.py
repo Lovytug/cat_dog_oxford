@@ -28,7 +28,7 @@ class ShortBaselineModel(nn.Module):
 
         x = self.pool(self.relu(self.conv2(x)))
 
-        x = self.conv3(self.relu(x))
+        x = self.relu(self.conv3(x))
 
         x = self.adaptive_pool(x)
 

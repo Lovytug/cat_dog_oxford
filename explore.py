@@ -23,7 +23,8 @@ from torch import nn
 
 from models.baseline.baseline import ShortBaselineModel, DeepBaselineModel
 
-from tools.experiment import Experiment
+from experiment.experiment import Experiment
+from experiment.experiment_tracker import ExperimentTracker
 
 # %%[markdown]
 # Команда чтобы настраивать пути (изображений и анотации) во время запуска консоли
@@ -49,6 +50,10 @@ args = parse_args()
 images_path = Path(args.images_dir)
 annotations_path = Path(args.annotations_dir)
 
+# %%
+
+tracker = ExperimentTracker(file_path="result/result.csv")
+
 # %%[markdown]
 ### Эксперименты
 # Далее производятся эксперименты по моделям
@@ -59,7 +64,7 @@ annotations_path = Path(args.annotations_dir)
 
 # %%
 model = ShortBaselineModel()
-optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 criterion = nn.CrossEntropyLoss()
 
 expirement_1 = Experiment(
@@ -71,20 +76,24 @@ expirement_1.setup_transforms()
 expirement_1.setup_data()
 expirement_1.setup_logger(log_dir="runs/exp_001_vanila_short_baseline")
 expirement_1.setup_model(model, optimizer, criterion)
-expirement_1.run()
+result = expirement_1.run(epochs=1)
+
+tracker.save(result)
 
 # %%
 model = DeepBaselineModel()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 criterion = nn.CrossEntropyLoss()
 
-expirement_1 = Experiment(
+expirement_2 = Experiment(
     images_dir=images_path,
     annotations_dir=annotations_path
 )
 
-expirement_1.setup_transforms()
-expirement_1.setup_data()
-expirement_1.setup_logger(log_dir="runs/exp_002_vanila_deep_baseline")
-expirement_1.setup_model(model, optimizer, criterion)
-expirement_1.run()
+expirement_2.setup_transforms()
+expirement_2.setup_data()
+expirement_2.setup_logger(log_dir="runs/exp_002_vanila_deep_baseline")
+expirement_2.setup_model(model, optimizer, criterion)
+result = expirement_2.run()
+
+tracker.save(result)

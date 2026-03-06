@@ -2,6 +2,7 @@ import torch
 from torch import nn
 from torch.utils.data import DataLoader
 from tools.tblogger import TBLogger
+from tools.metrics import ClassificationMetrics
 
 class ModelTrainer:
 
@@ -35,13 +36,13 @@ class ModelTrainer:
     def train(self, num_epochs: int, train_loader: DataLoader, val_loader: DataLoader):
         
         for epoch in range(num_epochs):
-            train_loss, train_met = self.train_one_epochs(train_loader=train_loader)
-            val_loss, val_met = self.evalute(val_loader=val_loader)
+            train_loss, train_metrics = self.train_one_epochs(train_loader=train_loader)
+            val_loss, val_metrics = self.evalute(val_loader=val_loader)
 
             if self.logger is not None:
                 self.logger.log_metrics(
-                    train_loss=train_loss, train_metric=train_met,
-                    val_loss=val_loss, val_metric=val_met,
+                    train_loss=train_loss, train_metric=train_metrics,
+                    val_loss=val_loss, val_metric=val_metrics,
                     epoch=epoch
                 )
                 self.logger.log_gradients(self.model, epoch)
@@ -49,11 +50,11 @@ class ModelTrainer:
 
             print(
                 f"Эпоха {epoch+1} из {num_epochs} -> "
-                f"train: loss {train_loss:.4f}, acc {train_met:.4f} -> "
-                f"val: loss {val_loss:.4f}, acc {val_met:.4f}"
+                f"train: loss {train_loss:.4f}, acc {train_metrics.accuracy:.4f} -> "
+                f"val: loss {val_loss:.4f}, acc {val_metrics.accuracy:.4f}"
             )
 
-            self._save_last_val_loss_metric(loss=val_loss, metric=val_met)
+            self._save_last_val_loss_metric(loss=val_loss, metric=val_metrics)
 
     def _save_last_val_loss_metric(self, loss, metric):
         self._last_val_loss = loss
@@ -76,9 +77,9 @@ class ModelTrainer:
     
     def train_one_epochs(self, train_loader: DataLoader):
         self.model.train()
+        metrics = ClassificationMetrics()
 
         total_loss = 0.0
-        correct = 0
         total = 0
 
         for img, labels in train_loader:
@@ -93,19 +94,20 @@ class ModelTrainer:
             self.optimizer.step()
 
             total_loss += loss.item() * img.size(0)
-
-            preds = torch.argmax(logits, dim=1)
-            correct += (preds == labels).sum().item()
             total += labels.size(0)
 
-        return total_loss / total, correct / total
+            metrics.update(logits=logits, labels=labels)
+
+        metric_values = metrics.compute()
+
+        return total_loss / total, metric_values
     
 
     def evalute(self, val_loader: DataLoader):
         self.model.eval()
+        metrics = ClassificationMetrics()
 
         total_loss = 0.0
-        correct = 0
         total = 0
 
         with torch.no_grad():
@@ -116,12 +118,13 @@ class ModelTrainer:
                 logits, loss = self._logits_loss(img, labels)
 
                 total_loss += loss.item() * img.size(0)
-
-                preds = torch.argmax(logits, dim=1)
-                correct += (preds == labels).sum().item()
                 total += labels.size(0)
 
-        return total_loss / total, correct / total
+                metrics.update(logits=logits, labels=labels)
+
+        metric_values = metrics.compute()
+
+        return total_loss / total, metric_values
     
 
     def _logits_loss(self, img, labels):
