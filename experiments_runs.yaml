@@ -25,7 +25,7 @@ experiments:
     epochs: 20
     log_dir: "runs/exp_003_upgrade_batch_deep_baseline"
 
-    residual_deep_baseline:
+  residual_deep_baseline:
     run: false
     model: "ResidualDeepBaselineModel"
     lr: 0.0003

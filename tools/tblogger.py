@@ -50,6 +50,11 @@ class TBLogger:
         )
 
 
+    def log_update_to_weight_ratio(self, mean_ratios: dict, epoch: int):
+        for name, value in mean_ratios.items():
+            self.writer.add_scalar(f"update_weight_ratio/{name}", value, epoch)
+
+
     def log_weights(self, model: nn.Module, epoch: int):
         for name, param in model.named_parameters():
             self.writer.add_histogram(

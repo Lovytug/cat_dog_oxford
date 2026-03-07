@@ -1,5 +1,4 @@
-from torchvision import transforms
-
+import torchvision.transforms.v2 as T
 
 class TransformBuilder:
     
@@ -11,19 +10,21 @@ class TransformBuilder:
 
     def build_train(self, augmentations=None):
         augmentations = augmentations or []
-        return transforms.Compose([
-            transforms.Resize(self.size_img),
+        return T.Compose([
+            T.RandomResizedCrop(self.size_img),
+            T.RandomHorizontalFlip(),
             *augmentations,
-            transforms.ToTensor(),
-            transforms.Normalize(self.mean, self.std),
+            T.ToTensor(),
+            T.Normalize(self.mean, self.std),
         ])
     
 
     def build_val(self):
-        return transforms.Compose([
-            transforms.Resize(self.size_img),
-            transforms.ToTensor(),
-            transforms.Normalize(self.mean, self.std),
+        return T.Compose([
+            T.Resize(256),
+            T.CenterCrop(self.size_img),
+            T.ToTensor(),
+            T.Normalize(self.mean, self.std),
         ])
     
 

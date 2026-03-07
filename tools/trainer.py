@@ -3,6 +3,7 @@ from torch import nn
 from torch.utils.data import DataLoader
 from tools.tblogger import TBLogger
 from tools.metrics import ClassificationMetrics
+from collections import defaultdict
 
 class ModelTrainer:
 
@@ -36,7 +37,7 @@ class ModelTrainer:
     def train(self, num_epochs: int, train_loader: DataLoader, val_loader: DataLoader):
         
         for epoch in range(num_epochs):
-            train_loss, train_metrics = self.train_one_epochs(train_loader=train_loader)
+            train_loss, train_metrics, mean_ratios = self.train_one_epoch(train_loader=train_loader)
             val_loss, val_metrics = self.evalute(val_loader=val_loader)
 
             if self.logger is not None:
@@ -46,6 +47,7 @@ class ModelTrainer:
                     epoch=epoch
                 )
                 self.logger.log_gradients(self.model, epoch)
+                self.logger.log_update_to_weight_ratio(mean_ratios, epoch)
                 self.logger.log_weights(self.model, epoch)
 
             print(
@@ -75,12 +77,15 @@ class ModelTrainer:
         return all_preds
 
     
-    def train_one_epochs(self, train_loader: DataLoader):
+    def train_one_epoch(self, train_loader: DataLoader):
         self.model.train()
         metrics = ClassificationMetrics()
 
         total_loss = 0.0
         total = 0
+
+        running_ratio = defaultdict(float)
+        count = 0
 
         for img, labels in train_loader:
             img = img.to(self.device)
@@ -91,6 +96,12 @@ class ModelTrainer:
             logits, loss = self._logits_loss(img, labels)
 
             loss.backward()
+            
+            ratios = self._compute_update_ratio()
+            for k, v in ratios.items():
+                running_ratio[k] += v
+            count += 1
+
             self.optimizer.step()
 
             total_loss += loss.item() * img.size(0)
@@ -100,8 +111,29 @@ class ModelTrainer:
 
         metric_values = metrics.compute()
 
-        return total_loss / total, metric_values
+        mean_ratios = {k: v / count for k, v in running_ratio.items()}
+
+        return total_loss / total, metric_values, mean_ratios
     
+    def _compute_update_ratio(self):
+        ratios = {}
+
+        lr = self.optimizer.param_groups[0]["lr"]
+
+        for name, p in self.model.named_parameters():
+            if p.grad is None:
+                continue
+
+            grad_norm = p.grad.norm(2)
+            weight_norm = p.data.norm(2)
+
+            update_norm = lr * grad_norm
+            ratio = update_norm / (weight_norm + 1e-8)
+
+            ratios[name] = ratio.item()
+
+        return ratios
+
 
     def evalute(self, val_loader: DataLoader):
         self.model.eval()

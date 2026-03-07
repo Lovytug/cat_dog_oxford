@@ -21,7 +21,7 @@ import yaml
 import numpy as np
 import torch
 from torch import nn
-from torchvision import transforms
+import torchvision.transforms.v2 as T
 
 from models.baseline.vanila.baseline import ShortBaselineModel, DeepBaselineModel
 from models.baseline.upgrade.baseline import BatchDeepBaselineModel, ResidualDeepBaselineModel
@@ -74,8 +74,21 @@ tracker = ExperimentTracker(file_path="result/result.csv")
 
 # %%
 
-train_transormer = transforms.Compose([
+color_random = T.RandomChoice([
+    T.ColorJitter(0.2, 0.2, 0.2, 0.95),
+    T.RandomChannelPermutation(),
+    T.RandomPhotometricDistort(),
+    T.RandomGrayscale(),
+])
 
+train_transormer = T.Compose([
+    T.RandomPerspective(p=0.3, degrees=15),
+    color_random,
+    T.RandomErasing(
+        p=0.15,
+        scale=(0.3, 0.3),
+        ratio=(0.33, 3.33),
+        value=(128, 128, 128))
 ])
 
 # %%
@@ -108,7 +121,7 @@ for exp_name, exp_config in config["experiments"].items():
         annotations_dir=Path(args.annotations_dir)
     )
     
-    experiment.setup_transforms()
+    experiment.setup_transforms(train_transormer)
     experiment.setup_data()
     experiment.setup_logger(log_dir=exp_config["log_dir"])
     experiment.setup_model(model, optimizer, criterion)

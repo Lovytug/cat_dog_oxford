@@ -7,8 +7,8 @@ class BatchDeepBaselineModel(nn.Module):
         Сеть с добавлением слоев нормализации
     """
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
 
         self.block1 = nn.Sequential(
             nn.Conv2d(3, 32, 3, padding=1),
