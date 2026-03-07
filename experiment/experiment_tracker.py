@@ -53,11 +53,11 @@ class ExperimentTracker:
                 result.lr,
                 result.batch_size,
 
-                round(result.val_loss),
+                (result.val_loss),
 
-                round(metrics.accuracy),
-                round(metrics.balanced_accuracy),
-                round(metrics.precision_macro),
-                round(metrics.recall_macro),
-                round(metrics.f1_macro)
+                (metrics.accuracy),
+                (metrics.balanced_accuracy),
+                (metrics.precision_macro),
+                (metrics.recall_macro),
+                (metrics.f1_macro)
             ])

@@ -24,6 +24,7 @@ from torch import nn
 from torchvision import transforms
 
 from models.baseline.vanila.baseline import ShortBaselineModel, DeepBaselineModel
+from models.baseline.upgrade.baseline import BatchDeepBaselineModel, ResidualDeepBaselineModel
 
 from experiment.experiment import Experiment
 from experiment.experiment_tracker import ExperimentTracker
@@ -49,6 +50,8 @@ def get_model(model_name: str):
     models = {
         "ShortBaselineModel": ShortBaselineModel,
         "DeepBaselineModel": DeepBaselineModel,
+        "BatchDeepBaselineModel": BatchDeepBaselineModel,
+        "ResidualDeepBaselineModel": ResidualDeepBaselineModel
     }
     if model_name not in models:
         raise ValueError(f"Unknown model: {model_name}")
@@ -84,10 +87,10 @@ for exp_name, exp_config in config["experiments"].items():
     
     # Пропускаем если run: false
     if not exp_config.get("run", True):
-        print(f"⏭️  Пропускаем {exp_name}")
+        print(f"Пропускаем {exp_name}")
         continue
     
-    print(f"\n🔬 Осуществляется запуск: {exp_name}")
+    print(f"\nОсуществляется запуск: {exp_name}")
     
 
     model = get_model(exp_config["model"])
@@ -113,4 +116,4 @@ for exp_name, exp_config in config["experiments"].items():
     result = experiment.run(epochs=exp_config["epochs"])
     tracker.save(result)
     
-    print(f"✅ {exp_name} завершена!")
+    print(f"{exp_name} завершена!")
