@@ -1,9 +1,20 @@
 import torch
 from torch import nn
 from torch.utils.data import DataLoader
-from tools.tblogger import TBLogger
-from tools.metrics import ClassificationMetrics
+from tools.metrics import ClassificationMetrics, Metrics
 from collections import defaultdict
+from dataclasses import dataclass
+
+@dataclass
+class TrainerState:
+    epoch: int = 0
+    batch: int = 0
+
+    train_loss: float | None = None
+    val_loss: float | None = None
+
+    train_metrics: Metrics | None = None
+    val_metrics: Metrics | None = None
 
 class ModelTrainer:
 
@@ -13,58 +24,60 @@ class ModelTrainer:
             optimizer: torch.optim.Optimizer,
             criterion,
             device,
-            logger: TBLogger = None
+            callbacks=None
     ):
         self.model = model.to(device)
         self.optimizer = optimizer
         self.criterion = criterion
         self.device = device
-        self.logger = logger
 
-        self._last_val_metric = None
-        self._last_val_loss = None
+        self.state = TrainerState()
 
+        self.callbacks = callbacks or []
+
+
+    def _call_event(self, event):
+        """Вызывает методы у коллбэков, если он существует"""
+
+        for cb in self.callbacks:
+            func = getattr(cb, event, None)
+
+            if func:
+                func(self)
     
-    @property
-    def val_loss(self):
-        return self._last_val_loss
-    
-    @property
-    def val_metric(self):
-        return self._last_val_metric
-
 
     def train(self, num_epochs: int, train_loader: DataLoader, val_loader: DataLoader):
         
+        self._call_event("on_train_start")
+
         for epoch in range(num_epochs):
-            train_loss, train_metrics, mean_ratios = self.train_one_epoch(train_loader=train_loader)
-            val_loss, val_metrics = self.evalute(val_loader=val_loader)
+            
+            self._call_event("on_epoch_start")
 
-            if self.logger is not None:
-                self.logger.log_metrics(
-                    train_loss=train_loss, train_metric=train_metrics,
-                    val_loss=val_loss, val_metric=val_metrics,
-                    epoch=epoch
-                )
-                self.logger.log_gradients(self.model, epoch)
-                self.logger.log_update_to_weight_ratio(mean_ratios, epoch)
-                self.logger.log_weights(self.model, epoch)
+            self.state.epoch = epoch
 
+            self.state.train_loss, self.state.train_metrics = self.train_one_epoch(train_loader=train_loader)
+            self.state.val_loss , self.state.val_metrics = self.evalute(val_loader=val_loader)
+
+            self._print_progress(num_epochs)
+
+            self._call_event("on_epoch_end")
+
+        self._call_event("on_train_end")
+
+    def _print_progress(self, num_epoch):
+            s = self.state
             print(
-                f"Эпоха {epoch+1} из {num_epochs} -> "
-                f"train: loss {train_loss:.4f}, acc {train_metrics.accuracy:.4f} -> "
-                f"val: loss {val_loss:.4f}, acc {val_metrics.accuracy:.4f}"
+                f"Эпоха {s.epoch+1} из {num_epoch} -> "
+                f"train: loss {s.train_loss:.4f}, acc {s.train_metrics.accuracy:.4f} -> "
+                f"val: loss {s.val_loss:.4f}, acc {s.val_metrics.accuracy:.4f}"
             )
-
-            self._save_last_val_loss_metric(loss=val_loss, metric=val_metrics)
-
-    def _save_last_val_loss_metric(self, loss, metric):
-        self._last_val_loss = loss
-        self._last_val_metric = metric
-
     
+
     def predict(self, dataloader: DataLoader):
+
         self.model.eval()
+
         all_preds = []
 
         with torch.no_grad():
@@ -78,29 +91,31 @@ class ModelTrainer:
 
     
     def train_one_epoch(self, train_loader: DataLoader):
+
         self.model.train()
+
         metrics = ClassificationMetrics()
 
-        total_loss = 0.0
-        total = 0
+        total_loss, total = 0.0, 0.0
 
-        running_ratio = defaultdict(float)
-        count = 0
+        for batch_idx, (img, labels) in enumerate(train_loader):
+            
+            self._call_event("on_batch_start")
+            
+            self.state.batch = batch_idx
 
-        for img, labels in train_loader:
-            img = img.to(self.device)
-            labels = labels.to(self.device)
+            img = self._set_device(img)
+            labels = self._set_device(labels)
 
             self.optimizer.zero_grad()
 
             logits, loss = self._logits_loss(img, labels)
 
+            self._call_event("on_forward_end")
+
             loss.backward()
-            
-            ratios = self._compute_update_ratio()
-            for k, v in ratios.items():
-                running_ratio[k] += v
-            count += 1
+
+            self._call_event("on_backward_end")
 
             self.optimizer.step()
 
@@ -109,43 +124,24 @@ class ModelTrainer:
 
             metrics.update(logits=logits, labels=labels)
 
-        metric_values = metrics.compute()
+            self._call_event("on_batch_end")
 
-        mean_ratios = {k: v / count for k, v in running_ratio.items()}
-
-        return total_loss / total, metric_values, mean_ratios
-    
-    def _compute_update_ratio(self):
-        ratios = {}
-
-        lr = self.optimizer.param_groups[0]["lr"]
-
-        for name, p in self.model.named_parameters():
-            if p.grad is None:
-                continue
-
-            grad_norm = p.grad.norm(2)
-            weight_norm = p.data.norm(2)
-
-            update_norm = lr * grad_norm
-            ratio = update_norm / (weight_norm + 1e-8)
-
-            ratios[name] = ratio.item()
-
-        return ratios
+        return total_loss / total, metrics.compute()
 
 
     def evalute(self, val_loader: DataLoader):
+
         self.model.eval()
         metrics = ClassificationMetrics()
 
-        total_loss = 0.0
-        total = 0
+        total_loss, total = 0.0, 0.0
 
         with torch.no_grad():
+
             for img, labels in val_loader:
-                img = img.to(self.device)
-                labels = labels.to(self.device)
+
+                img = self._set_device(img)
+                labels = self._set_device(labels)
 
                 logits, loss = self._logits_loss(img, labels)
 
@@ -154,10 +150,12 @@ class ModelTrainer:
 
                 metrics.update(logits=logits, labels=labels)
 
-        metric_values = metrics.compute()
 
-        return total_loss / total, metric_values
+        return total_loss / total, metrics.compute()
     
+
+    def _set_device(self, tensor: torch.Tensor):
+        return tensor.to(self.device)
 
     def _logits_loss(self, img, labels):
         logits = self.model(img)

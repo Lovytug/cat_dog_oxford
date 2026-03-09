@@ -3,8 +3,9 @@ from pathlib import Path
 
 from tools.dataset_dataloader import CreaterTrainValDataset, CreaterDataloader
 from tools.trainer import ModelTrainer
-from tools.tblogger import TBLogger
+from tools.loggers.tblogger import TBLogger
 from tools.transformer_builder import TransformBuilder
+from tools.loggers.base_callback import Callback
 
 from experiment.experiment_config import ExperimentResult
 
@@ -66,10 +67,11 @@ class Experiment:
         self.val_loader = dl_creater.create(val_ds, self.batch_size)
         
 
-    def setup_logger(self, log_dir="runs/exp"):
-        self.logger = TBLogger(log_dir=log_dir)
+    def setup_logger(self, callbackers: list[Callback], log_dir="runs/exp"):
+        self.logger = TBLogger(callbackers=callbackers, log_dir=log_dir)
+
         if self.trainer is not None:
-            self.trainer.logger = self.logger
+            self.trainer.callbacks = self.logger.loggers
 
 
     def setup_model(self, model, optimizer, criterion):
@@ -85,7 +87,7 @@ class Experiment:
             optimizer=self.optimizer,
             criterion=self.criterion,
             device=self.device,
-            logger=self.logger
+            callbacks=self.logger.loggers
         )
 
     
@@ -99,11 +101,13 @@ class Experiment:
             val_loader=self.val_loader
         )
 
+        s = self.trainer.state
+
         result = ExperimentResult(
             experiment_name=self.logger.writer.log_dir,
             model_name=self.model.__class__.__name__,
-            val_metrics=self.trainer.val_metric,
-            val_loss=self.trainer.val_loss,
+            val_metrics=s.val_metrics,
+            val_loss=s.val_loss,
             epochs=epochs,
             lr=self.optimizer.param_groups[0]["lr"],
             batch_size=self.batch_size
@@ -113,8 +117,8 @@ class Experiment:
             hparams = self.collect_hparams(epochs)
 
             metrics = {
-                "hparam/final_val_acc": self.trainer.val_metric.accuracy,
-                "hparam/final_val_loss": self.trainer.val_loss
+                "hparam/final_val_acc": s.val_metrics.accuracy,
+                "hparam/final_val_loss": s.val_loss
             }
             self.logger.log_hparams(hparams, metrics)
             self.logger.close()

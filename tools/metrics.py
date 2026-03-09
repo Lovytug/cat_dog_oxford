@@ -34,7 +34,7 @@ class ClassificationMetrics:
         self.preds.extend(preds)
         self.targets.extend(labels)
 
-    def compute(self):
+    def compute(self) -> Metrics:
         return Metrics(
             accuracy=accuracy_score(self.targets, self.preds),
             balanced_accuracy=balanced_accuracy_score(self.targets, self.preds),

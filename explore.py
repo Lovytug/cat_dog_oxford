@@ -26,6 +26,11 @@ import torchvision.transforms.v2 as T
 from models.baseline.vanila.baseline import ShortBaselineModel, DeepBaselineModel
 from models.baseline.upgrade.baseline import BatchDeepBaselineModel, ResidualDeepBaselineModel
 
+from tools.loggers.filter_activ_logger import FilterActivityLogger
+from tools.loggers.gradients_logger import GradientsLogger
+from tools.loggers.metric_logger import MetricLogger
+from tools.loggers.weight_update_logger import WeightUpdateLogger
+
 from experiment.experiment import Experiment
 from experiment.experiment_tracker import ExperimentTracker
 
@@ -75,14 +80,14 @@ tracker = ExperimentTracker(file_path="result/result.csv")
 # %%
 
 color_random = T.RandomChoice([
-    T.ColorJitter(0.2, 0.2, 0.2, 0.95),
+    T.ColorJitter(0.2, 0.2, 0.2, 0.1),
     T.RandomChannelPermutation(),
     T.RandomPhotometricDistort(),
     T.RandomGrayscale(),
 ])
 
 train_transormer = T.Compose([
-    T.RandomPerspective(p=0.3, degrees=15),
+    T.RandomRotation(degrees=15),
     color_random,
     T.RandomErasing(
         p=0.15,
@@ -90,6 +95,14 @@ train_transormer = T.Compose([
         ratio=(0.33, 3.33),
         value=(128, 128, 128))
 ])
+
+# %%
+callbackers = [
+    MetricLogger,
+    GradientsLogger,
+    WeightUpdateLogger,
+    FilterActivityLogger
+]
 
 # %%
 for exp_name, exp_config in config["experiments"].items():
@@ -123,7 +136,7 @@ for exp_name, exp_config in config["experiments"].items():
     
     experiment.setup_transforms(train_transormer)
     experiment.setup_data()
-    experiment.setup_logger(log_dir=exp_config["log_dir"])
+    experiment.setup_logger(callbackers=callbackers, log_dir=exp_config["log_dir"])
     experiment.setup_model(model, optimizer, criterion)
     
     result = experiment.run(epochs=exp_config["epochs"])

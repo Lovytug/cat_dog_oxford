@@ -13,7 +13,7 @@ class TransformBuilder:
         return T.Compose([
             T.RandomResizedCrop(self.size_img),
             T.RandomHorizontalFlip(),
-            *augmentations,
+            augmentations,
             T.ToTensor(),
             T.Normalize(self.mean, self.std),
         ])
