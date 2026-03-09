@@ -126,8 +126,8 @@ for exp_name, exp_config in config["experiments"].items():
     
     optimizer = torch.optim.Adam(
         model.parameters(), 
-        lr=exp_config["lr"],
-        weight_decay=exp_config.get("weight_decay", 0.0)
+        lr=float(exp_config["lr"]),
+        weight_decay=float(exp_config.get("weight_decay", 0.0))
     )
 
     scheduler = build_scheduler(

@@ -28,7 +28,7 @@ class WeightUpdateLogger(Callback):
             norm_w = weight.norm(2).item()
             norm_g = grad.norm(2).item()
 
-            self.layer_ratio[name].append(norm_g / norm_w)
+            self.layer_ratio[name].append(norm_g / (norm_w + 1e-10))
 
 
     def on_epoch_end(self, trainer: ModelTrainer):
