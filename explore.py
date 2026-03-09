@@ -30,6 +30,8 @@ from tools.loggers.filter_activ_logger import FilterActivityLogger
 from tools.loggers.gradients_logger import GradientsLogger
 from tools.loggers.metric_logger import MetricLogger
 from tools.loggers.weight_update_logger import WeightUpdateLogger
+from tools.loggers.lr_logger import LRLogger
+from tools.schedulers import build_scheduler
 
 from experiment.experiment import Experiment
 from experiment.experiment_tracker import ExperimentTracker
@@ -101,7 +103,8 @@ callbackers = [
     MetricLogger,
     GradientsLogger,
     WeightUpdateLogger,
-    FilterActivityLogger
+    FilterActivityLogger,
+    LRLogger
 ]
 
 # %%
@@ -126,7 +129,12 @@ for exp_name, exp_config in config["experiments"].items():
         lr=exp_config["lr"],
         weight_decay=exp_config.get("weight_decay", 0.0)
     )
-    
+
+    scheduler = build_scheduler(
+        optimizer,
+        exp_config.get("scheduler")
+    )
+
     criterion = nn.CrossEntropyLoss()
 
     experiment = Experiment(
@@ -137,7 +145,7 @@ for exp_name, exp_config in config["experiments"].items():
     experiment.setup_transforms(train_transormer)
     experiment.setup_data()
     experiment.setup_logger(callbackers=callbackers, log_dir=exp_config["log_dir"])
-    experiment.setup_model(model, optimizer, criterion)
+    experiment.setup_model(model, optimizer, criterion, scheduler)
     
     result = experiment.run(epochs=exp_config["epochs"])
     tracker.save(result)

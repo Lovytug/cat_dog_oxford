@@ -24,11 +24,13 @@ class ModelTrainer:
             optimizer: torch.optim.Optimizer,
             criterion,
             device,
-            callbacks=None
+            callbacks=None,
+            scheduler=None
     ):
         self.model = model.to(device)
         self.optimizer = optimizer
         self.criterion = criterion
+        self.scheduler = scheduler
         self.device = device
 
         self.state = TrainerState()
@@ -59,6 +61,9 @@ class ModelTrainer:
             self.state.train_loss, self.state.train_metrics = self.train_one_epoch(train_loader=train_loader)
             self.state.val_loss , self.state.val_metrics = self.evalute(val_loader=val_loader)
 
+            if self.scheduler is not None:
+                self.scheduler.step()
+                
             self._print_progress(num_epochs)
 
             self._call_event("on_epoch_end")

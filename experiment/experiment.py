@@ -38,6 +38,7 @@ class Experiment:
         self.model = None
         self.optimizer = None
         self.criterion = None
+        self.scheduler = None
 
         self.trainer = None
         self.logger = None
@@ -74,7 +75,7 @@ class Experiment:
             self.trainer.callbacks = self.logger.loggers
 
 
-    def setup_model(self, model, optimizer, criterion):
+    def setup_model(self, model, optimizer, criterion, scheduler=None):
         if model is None or optimizer is None or criterion is None:
             raise ValueError(f"Модель, оптимизатор и критерий должны быть инициализированы. \
                              Пришло {model}, {optimizer}, {criterion}")
@@ -82,10 +83,12 @@ class Experiment:
         self.model = model
         self.optimizer = optimizer
         self.criterion = criterion
+        self.scheduler = scheduler
         self.trainer = ModelTrainer(
             model=self.model,
             optimizer=self.optimizer,
             criterion=self.criterion,
+            scheduler=self.scheduler,
             device=self.device,
             callbacks=self.logger.loggers
         )

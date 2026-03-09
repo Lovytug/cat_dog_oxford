@@ -8,6 +8,7 @@ experiments:
     epochs: 5
     log_dir: "runs/exp_001_vanila_short_baseline"
 
+
   deep_baseline:
     run: true
     model: "DeepBaselineModel"
@@ -17,6 +18,7 @@ experiments:
     log_dir: "runs/exp_002_vanila_deep_baseline"
 
 
+
   batch_deep_baseline:
     run: false
     model: "BatchDeepBaselineModel"
@@ -24,6 +26,12 @@ experiments:
     weight_decay: 0.0
     epochs: 20
     log_dir: "runs/exp_003_upgrade_batch_deep_baseline"
+
+    scheduler:
+      run: true
+      name: cosine
+      T_max: 20
+
 
   residual_deep_baseline:
     run: false
