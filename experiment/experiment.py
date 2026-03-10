@@ -4,7 +4,7 @@ from pathlib import Path
 from tools.dataset_dataloader import CreaterTrainValDataset, CreaterDataloader
 from tools.trainer import ModelTrainer
 from tools.loggers.tblogger import TBLogger
-from tools.transformer_builder import TransformBuilder
+from builder.transformer_builder import TransformBuilder
 from tools.loggers.base_callback import Callback
 
 from experiment.experiment_config import ExperimentResult
@@ -23,6 +23,13 @@ class Experiment:
     ):
         self.images_dir = Path(images_dir)
         self.annotations_dir = Path(annotations_dir)
+
+        if not self.images_dir.exists():
+            raise FileNotFoundError(self.images_dir)
+        if not self.annotations_dir.exists():
+            raise FileNotFoundError(self.annotations_dir)
+        
+        
         self.batch_size = batch_size
         self.device = device or torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -32,21 +39,20 @@ class Experiment:
 
         self.train_transform = None
         self.val_transform = None
+
         self.train_loader = None
         self.val_loader = None
 
         self.model = None
         self.optimizer = None
-        self.criterion = None
-        self.scheduler = None
 
         self.trainer = None
         self.logger = None
 
     
-    def setup_transforms(self, train_aug=None):
+    def setup_transforms(self, train_tf=None, val_tf=None):
         builder = TransformBuilder(size_img=self.size_img, mean=self.mean, std=self.std)
-        self.train_transform = builder.build_train(augmentations=train_aug)
+        self.train_transform = builder.build_train(augmentations=train_tf)
         self.val_transform = builder.build_val()
 
     
@@ -75,10 +81,12 @@ class Experiment:
             self.trainer.callbacks = self.logger.loggers
 
 
-    def setup_model(self, model, optimizer, criterion, scheduler=None):
-        if model is None or optimizer is None or criterion is None:
+    def setup_model(self, model, optimizer, scheduler=None):
+        if model is None or optimizer is None:
             raise ValueError(f"Модель, оптимизатор и критерий должны быть инициализированы. \
-                             Пришло {model}, {optimizer}, {criterion}")
+                             Пришло {model}, {optimizer}")
+
+        criterion = torch.nn.CrossEntropyLoss()
 
         self.model = model
         self.optimizer = optimizer

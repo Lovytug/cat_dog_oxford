@@ -1,13 +1,14 @@
 import torch
 from torch import nn
+from models.registry import ModelRegistry
 
-
+@ModelRegistry.register("batch_deep_baseline")
 class BatchDeepBaselineModel(nn.Module):
     """
         Сеть с добавлением слоев нормализации
     """
 
-    def __init__(self):
+    def __init__(self, num_classes=37):
         super().__init__()
 
         self.block1 = nn.Sequential(
@@ -50,7 +51,7 @@ class BatchDeepBaselineModel(nn.Module):
 
         self.flatten = nn.Flatten()
 
-        self.fc = nn.Linear(128, 37)
+        self.fc = nn.Linear(128, num_classes)
 
 
     def forward(self, x):
@@ -98,13 +99,13 @@ class ResidualBlock(nn.Module):
         x += identity
         return self.relu(x)
     
-
+@ModelRegistry.register("residual_deep_model")
 class ResidualDeepBaselineModel(nn.Module):
     """
         Создание своей остаточной сети
     """
 
-    def __init__(self):
+    def __init__(self, num_classes=37):
         super().__init__()
 
         self.preprocess_conv = nn.Sequential(
@@ -130,7 +131,7 @@ class ResidualDeepBaselineModel(nn.Module):
 
         self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
 
-        self.fc = nn.Linear(128, 37)
+        self.fc = nn.Linear(128, num_classes)
 
 
     def forward(self, x):

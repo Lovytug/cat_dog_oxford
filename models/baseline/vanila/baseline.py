@@ -1,12 +1,14 @@
 from torch import nn
+from models.registry import ModelRegistry
 
+@ModelRegistry.register("short_baseline_model")
 class ShortBaselineModel(nn.Module):
     """
         Неглубокая сеть сверточная сеть из трех сверток.
         Нет вспомогательных слоев
     """
 
-    def __init__(self):
+    def __init__(self, num_classes=37):
         super().__init__()
 
         self.conv1 = nn.Conv2d(3, 16, 3)
@@ -19,7 +21,7 @@ class ShortBaselineModel(nn.Module):
         self.relu = nn.ReLU()
 
         self.fc1 = nn.Linear(32, 16)
-        self.fc2 = nn.Linear(16, 37)
+        self.fc2 = nn.Linear(16, num_classes)
 
 
     def forward(self, x):
@@ -40,14 +42,14 @@ class ShortBaselineModel(nn.Module):
 
         return logits
     
-
+@ModelRegistry.register("deep_baseline_model")
 class DeepBaselineModel(nn.Module):
     """
         Глубокая сверточная сеть из трех блоков, по двум сверточным слоям.
         Нет вспомогательных слоев
     """
 
-    def __init__(self):
+    def __init__(self, num_classes=37):
         super().__init__()
 
         self.block1 = nn.Sequential(
@@ -84,7 +86,7 @@ class DeepBaselineModel(nn.Module):
 
         self.flatten = nn.Flatten()
 
-        self.fc = nn.Linear(128, 37)
+        self.fc = nn.Linear(128, num_classes)
 
 
     def forward(self, x):

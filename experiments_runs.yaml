@@ -1,42 +1,56 @@
-
 experiments:
-  short_baseline:
-    run: false
-    model: "ShortBaselineModel"
-    lr: 0.001
-    weight_decay: 0.0  
-    epochs: 5
-    log_dir: "runs/exp_001_vanila_short_baseline"
 
+  batch_baseline:
 
-  deep_baseline:
-    run: false
-    model: "DeepBaselineModel"
-    lr: 0.0001
-    weight_decay: 0.0  
-    epochs: 10
-    log_dir: "runs/exp_002_vanila_deep_baseline"
-
-
-
-  batch_deep_baseline:
     run: true
-    model: "BatchDeepBaselineModel"
-    lr: 0.001
-    weight_decay: 1e-4
-    epochs: 20
-    log_dir: "runs/exp_003_upgrade_batch_deep_baseline"
+
+    model:
+      name: batch_deep_baseline
+      params:
+        num_classes: 37
+
+    optimizer:
+      name: adam
+      weight_decay: 1e-4
+
+      param_groups:
+        - use: false
+        - module: block1
+          lr: 0.0001
+        - module: block2
+          lr: 0.0001
+        - module: block3
+          lr: 0.0003
+        - module: fc
+          lr: 0.001
 
     scheduler:
       run: true
       name: cosine
       T_max: 20
 
+    transforms:
+      train:
+        - random_rotation:
+            degrees: 15
+        - color_jitter:
+            brightness: 0.2
+            contrast: 0.2
+            saturation: 0.2
+        - random_erasing:
+            p: 0.15
+      val: []
 
-  residual_deep_baseline:
-    run: false
-    model: "ResidualDeepBaselineModel"
-    lr: 0.0003
-    weight_decay: 0.0
+    mean: [0.485, 0.456, 0.406]
+    std: [0.229, 0.224, 0.225]
+
+    callbacks:
+      - metric_logger
+      - gradients_logger
+      - weight_update_logger
+      - filter_activity_logger
+      - lr_logger
+
+    batch_size: 32
     epochs: 20
-    log_dir: "runs/exp_004_upgrade_residual_deep_baseline"
+    log_dir: runs/exp_batch

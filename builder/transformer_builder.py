@@ -1,4 +1,5 @@
 import torchvision.transforms.v2 as T
+import torch
 
 class TransformBuilder:
     
@@ -13,8 +14,9 @@ class TransformBuilder:
         return T.Compose([
             T.RandomResizedCrop(self.size_img),
             T.RandomHorizontalFlip(),
-            augmentations,
-            T.ToTensor(),
+            *augmentations,
+            T.ToImage(),
+            T.ToDtype(dtype=torch.float32, scale=True),
             T.Normalize(self.mean, self.std),
         ])
     
@@ -23,7 +25,8 @@ class TransformBuilder:
         return T.Compose([
             T.Resize(256),
             T.CenterCrop(self.size_img),
-            T.ToTensor(),
+            T.ToImage(),
+            T.ToDtype(dtype=torch.float32, scale=True),
             T.Normalize(self.mean, self.std),
         ])
     
