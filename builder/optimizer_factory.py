@@ -1,7 +1,7 @@
 import torch
 
 
-def get_module(self, model, name):
+def get_module(model, name):
 
     module = model
 
@@ -35,14 +35,14 @@ class OptimizerFactory:
                     
                 param_groups.append({
                     "params": module.parameters(),
-                    "lr": group["lr"]
+                    "lr": float(group["lr"])
                 })
 
         else:
 
             param_groups.append({
                 "params": model.parameters(),
-                "lr": config["lr"]
+                "lr": float(config["lr"])
             })
 
         if name == "adam":

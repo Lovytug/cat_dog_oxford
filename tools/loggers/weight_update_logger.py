@@ -38,7 +38,7 @@ class WeightUpdateLogger(Callback):
             norm_w = weight.norm(2).item()
             norm_g = grad.norm(2).item()
             
-            lr = self.param_lr.get(id(param), trainer.optimizer.param_groups[0]["lr"])
+            lr = float(self.param_lr.get(id(param), trainer.optimizer.param_groups[0]["lr"]))
 
             ratio = lr * norm_g / (norm_w + 1e-10)
 

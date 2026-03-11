@@ -3,6 +3,7 @@ import torch
 from models.baseline.upgrade.baseline import BatchDeepBaselineModel, ResidualDeepBaselineModel
 from models.baseline.vanila.baseline import DeepBaselineModel, ShortBaselineModel
 from models.baseline.upgrade.bacth_deep import BatchDeepNewStartFiltersBaselineModel, BatchDeepNewEndFilterBaselineModel
+from models.res_net.res_net50 import ResNetTransfer
 from builder.experiment_builder import ExperimentBuilder
 from experiment.experiment import Experiment
 

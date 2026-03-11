@@ -1,21 +1,23 @@
 experiments:
 
-  batch_baseline:
+  res_net:
 
     run: true
 
     model:
-      name: batch_new_filter_size_32_64_bottleneck_baseline
+      name: resnet50_transfer
       params:
         num_classes: 37
 
     optimizer:
       name: adam
       weight_decay: 1e-4
-      lr: 0.001
+      param_groups:
+        - module: fc
+          lr: 1e-3
 
     scheduler:
-      run: true
+      run: false
       name: cosine
       T_max: 100
 
@@ -43,4 +45,4 @@ experiments:
 
     batch_size: 32
     epochs: 50
-    log_dir: runs/exp_015_on_012_bacth_new_version_32_64_bottleneck_filter
+    log_dir: runs/exp_016_res_net_fc_e3
