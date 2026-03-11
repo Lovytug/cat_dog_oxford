@@ -77,7 +77,7 @@ class BatchDeepNewStartFiltersBaselineModel(nn.Module):
     
 
 
-@ModelRegistry.register("batch_new_filter_size_32_48_96_baseline")
+@ModelRegistry.register("batch_new_filter_size_32_64_bottleneck_baseline")
 class BatchDeepNewEndFilterBaselineModel(nn.Module):
     """
         Изменение по колчиетсву фильтров
