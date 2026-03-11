@@ -127,3 +127,17 @@ class BatchDeepNewEndFilterBaselineModel(nn.Module):
         self.flatten = nn.Flatten()
 
         self.fc = nn.Linear(64, num_classes)
+
+
+    def forward(self, x):
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.block3(x)
+
+        x = self.adaptive_pool(x)
+
+        x = self.flatten(x)
+
+        logits = self.fc(x)
+
+        return logits
