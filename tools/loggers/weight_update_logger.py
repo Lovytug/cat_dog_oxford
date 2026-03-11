@@ -9,6 +9,16 @@ class WeightUpdateLogger(Callback):
     def __init__(self, writer: SummaryWriter):
         self.writer = writer
         self.layer_ratio = defaultdict(list)
+        self.param_lr = {}
+
+    def on_train_start(self, trainer: ModelTrainer):
+
+        for group in trainer.optimizer.param_groups:
+
+            lr = group["lr"]
+
+            for param in group["params"]:
+                self.param_lr[id(param)] = lr
 
 
     def on_epoch_start(self, trainer: ModelTrainer):
@@ -27,26 +37,28 @@ class WeightUpdateLogger(Callback):
 
             norm_w = weight.norm(2).item()
             norm_g = grad.norm(2).item()
+            
+            lr = self.param_lr.get(id(param), trainer.optimizer.param_groups[0]["lr"])
 
-            self.layer_ratio[name].append(norm_g / (norm_w + 1e-10))
+            ratio = lr * norm_g / (norm_w + 1e-10)
+
+            self.layer_ratio[name].append(ratio)
 
 
     def on_epoch_end(self, trainer: ModelTrainer):
 
         epoch = trainer.state.epoch
 
-        lr = trainer.optimizer.param_groups[0]['lr']
         total_norm_sq = 0.0
         for name, ratio in self.layer_ratio.items():
                 
             mean_norm = sum(ratio) / len(ratio)
-            R = lr * mean_norm
 
-            total_norm_sq += R**2
+            total_norm_sq += mean_norm**2
 
             self.writer.add_scalar(
                 f"WeightUpdateRatio/layer/{name}",
-                R,
+                mean_norm,
                 epoch
             )
 
@@ -57,5 +69,13 @@ class WeightUpdateLogger(Callback):
             global_ratio, 
             epoch
         )
+
+    def get_lr_for_param(self, trainer, param):
+
+        for group in trainer.optimizer.param_groups:
+            if param in group["params"]:
+                return group["lr"]
+
+        return trainer.optimizer.param_groups[0]["lr"]
 
             

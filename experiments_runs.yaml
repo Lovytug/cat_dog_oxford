@@ -5,29 +5,19 @@ experiments:
     run: true
 
     model:
-      name: batch_deep_baseline
+      name: batch_new_filter_size_16_baseline
       params:
         num_classes: 37
 
     optimizer:
       name: adam
       weight_decay: 1e-4
-
-      param_groups:
-        - use: false
-        - module: block1
-          lr: 0.0001
-        - module: block2
-          lr: 0.0001
-        - module: block3
-          lr: 0.0003
-        - module: fc
-          lr: 0.001
+      lr: 0.001
 
     scheduler:
       run: true
       name: cosine
-      T_max: 20
+      T_max: 100
 
     transforms:
       train:
@@ -52,5 +42,5 @@ experiments:
       - lr_logger
 
     batch_size: 32
-    epochs: 20
-    log_dir: runs/exp_batch
+    epochs: 50
+    log_dir: runs/exp_014_on_012_bacth_new_version_16_filter_512_256_fc

@@ -1,6 +1,15 @@
 import torch
 
 
+def get_module(self, model, name):
+
+    module = model
+
+    for part in name.split("."):
+        module = getattr(module, part)
+
+    return module
+
 class OptimizerFactory:
 
     @staticmethod
@@ -19,8 +28,11 @@ class OptimizerFactory:
 
                 module_name = group["module"]
 
-                module = getattr(model, module_name)
+                module = get_module(model, module_name)
 
+                for p in module.parameters():
+                    p.requires_grad = True
+                    
                 param_groups.append({
                     "params": module.parameters(),
                     "lr": group["lr"]
