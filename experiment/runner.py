@@ -2,6 +2,7 @@ import torch
 
 from models.baseline.upgrade.baseline import BatchDeepBaselineModel, ResidualDeepBaselineModel
 from models.baseline.vanila.baseline import DeepBaselineModel, ShortBaselineModel
+from models.baseline.upgrade.bacth_deep import BatchDeepBaselineModel
 from builder.experiment_builder import ExperimentBuilder
 from experiment.experiment import Experiment
 
