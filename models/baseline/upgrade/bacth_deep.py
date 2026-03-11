@@ -4,7 +4,7 @@ from models.registry import ModelRegistry
 
 
 @ModelRegistry.register("batch_new_filter_size_16_baseline")
-class BatchDeepBaselineModel(nn.Module):
+class BatchDeepNewStartFiltersBaselineModel(nn.Module):
     """
         Новая модель сети с уменьшением фильтров в начале и расширение горловины перед fc
         углубление классификатора. Добавление dropout
@@ -74,3 +74,56 @@ class BatchDeepBaselineModel(nn.Module):
         logits = self.classifier(x)
 
         return logits
+    
+
+
+@ModelRegistry.register("batch_new_filter_size_32_48_96_baseline")
+class BatchDeepNewEndFilterBaselineModel(nn.Module):
+    """
+        Изменение по колчиетсву фильтров
+    """
+
+    def __init__(self, num_classes=37):
+        super().__init__()
+
+        self.block1 = nn.Sequential(
+            nn.Conv2d(3, 32, 3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+
+            nn.Conv2d(32, 32, 3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+
+            nn.MaxPool2d(2)
+        )
+
+        self.block2 = nn.Sequential(
+            nn.Conv2d(32, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+
+            nn.Conv2d(64, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+
+            nn.MaxPool2d(2)
+        )
+
+        self.block3 = nn.Sequential(
+            nn.Conv2d(64, 128, 3, padding=1),
+            nn.BatchNorm2d(128),
+            nn.ReLU(),
+
+            nn.Conv2d(128, 64, 3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+
+            nn.MaxPool2d(2)
+        )
+
+        self.adaptive_pool = nn.AdaptiveAvgPool2d((1, 1))
+
+        self.flatten = nn.Flatten()
+
+        self.fc = nn.Linear(64, num_classes)

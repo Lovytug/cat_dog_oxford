@@ -5,7 +5,7 @@ experiments:
     run: true
 
     model:
-      name: batch_new_filter_size_16_baseline
+      name: batch_new_filter_size_32_64_bottleneck_baseline
       params:
         num_classes: 37
 
@@ -43,4 +43,4 @@ experiments:
 
     batch_size: 32
     epochs: 50
-    log_dir: runs/exp_014_on_012_bacth_new_version_16_filter_512_256_fc
+    log_dir: runs/exp_015_on_012_bacth_new_version_32_64_bottleneck_filter
