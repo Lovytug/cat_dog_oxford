@@ -47,6 +47,7 @@ tb_logs/
 events.out.tfevents.*
 tensorboard/
 *.log
+yolo_data/
 
 # Models & Checkpoints
 *.pth

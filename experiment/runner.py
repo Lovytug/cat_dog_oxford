@@ -1,11 +1,11 @@
 import torch
-
 from models.baseline.upgrade.baseline import BatchDeepBaselineModel, ResidualDeepBaselineModel
 from models.baseline.vanila.baseline import DeepBaselineModel, ShortBaselineModel
 from models.baseline.upgrade.bacth_deep import BatchDeepNewStartFiltersBaselineModel, BatchDeepNewEndFilterBaselineModel
 from models.res_net.res_net50 import ResNetTransfer
 from builder.experiment_builder import ExperimentBuilder
 from experiment.experiment import Experiment
+from experiment.detection_experiment import DetectionExperiment
 
 
 class ExperimentRunner:
@@ -40,6 +40,19 @@ class ExperimentRunner:
     def _run_single(self, name, config):
 
         print(f"\nЗапущена: {name}")
+
+        if config.get("task", "classification") == "detection":
+
+            experiment = DetectionExperiment(
+                config=config,
+                images_dir=self.images_dir,
+                annotations_dir=self.annotations_dir
+            )
+
+            experiment.run()
+
+            print(f"{name} закончена\n")
+            return
 
         builder = ExperimentBuilder(config)
 

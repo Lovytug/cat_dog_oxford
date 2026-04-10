@@ -1,48 +1,65 @@
+# experiments:
+
+#   res_net:
+
+#     run: true
+
+#     model:
+#       name: resnet50_transfer
+#       params:
+#         num_classes: 37
+
+#     optimizer:
+#       name: adam
+#       weight_decay: 1e-4
+#       param_groups:
+#         - module: fc
+#           lr: 1e-3
+
+#     scheduler:
+#       run: False
+#       name: cosine
+#       T_max: 100
+
+#     transforms:
+#       train:
+#         - random_rotation:
+#             degrees: 15
+#         - color_jitter:
+#             brightness: 0.2
+#             contrast: 0.2
+#             saturation: 0.2
+#         - random_erasing:
+#             p: 0.15
+#       val: []
+
+#     mean: [0.485, 0.456, 0.406]
+#     std: [0.229, 0.224, 0.225]
+
+#     callbacks:
+#       - metric_logger
+#       - gradients_logger
+#       - weight_update_logger
+#       - filter_activity_logger
+#       - lr_logger
+
+#     batch_size: 32
+#     epochs: 50
+#     log_dir: runs/exp_016_res_net_fc_e3
+
+
 experiments:
 
-  res_net:
+  yolo_v8_nano:
 
-    run: true
+    task: detection
 
     model:
-      name: resnet50_transfer
+      name: yolo_v8
       params:
-        num_classes: 37
+        model_name: yolov8n.pt
 
-    optimizer:
-      name: adam
-      weight_decay: 1e-4
-      param_groups:
-        - module: fc
-          lr: 1e-3
+    data_yaml: dataset.yaml
 
-    scheduler:
-      run: false
-      name: cosine
-      T_max: 100
-
-    transforms:
-      train:
-        - random_rotation:
-            degrees: 15
-        - color_jitter:
-            brightness: 0.2
-            contrast: 0.2
-            saturation: 0.2
-        - random_erasing:
-            p: 0.15
-      val: []
-
-    mean: [0.485, 0.456, 0.406]
-    std: [0.229, 0.224, 0.225]
-
-    callbacks:
-      - metric_logger
-      - gradients_logger
-      - weight_update_logger
-      - filter_activity_logger
-      - lr_logger
-
-    batch_size: 32
     epochs: 50
-    log_dir: runs/exp_016_res_net_fc_e3
+    img_size: 640
