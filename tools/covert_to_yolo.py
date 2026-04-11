@@ -14,12 +14,12 @@ class OxfordPetsToYOLO:
 
     def convert(self):
 
-        print("🔄 Конвертация датасета в YOLO формат...")
+        print("Конвертация датасета в YOLO формат...")
 
         all_images = list(self.images_dir.glob("*.jpg"))
 
         if len(all_images) == 0:
-            raise ValueError("❌ В папке нет изображений")
+            raise ValueError("В папке нет изображений")
 
         random.shuffle(all_images)
 
@@ -28,14 +28,14 @@ class OxfordPetsToYOLO:
         train_images = all_images[:split_idx]
         val_images = all_images[split_idx:]
 
-        print(f"📊 Train: {len(train_images)}, Val: {len(val_images)}")
+        print(f"Train: {len(train_images)}, Val: {len(val_images)}")
 
         self._process_list("train", train_images)
         self._process_list("val", val_images)
 
         self._create_yaml()
 
-        print("✅ Готово")
+        print("Готово")
 
 
     def _process_list(self, split, image_paths):
@@ -48,14 +48,13 @@ class OxfordPetsToYOLO:
 
         count = 0
 
-        # 👉 читаем mapping из txt
         split_file = self.annotations_dir / "trainval.txt"
         mapping = {}
 
         with open(split_file) as f:
             for line in f:
-                image_id, _, species, _ = line.strip().split()
-                mapping[image_id] = int(species)
+                image_id, _, _, breed_id = line.strip().split()
+                mapping[image_id] = int(breed_id)
 
         for img_path in image_paths:
 
@@ -68,7 +67,7 @@ class OxfordPetsToYOLO:
             if image_id not in mapping:
                 continue
 
-            species = mapping[image_id]
+            breed_id = mapping[image_id]
 
             shutil.copy(img_path, img_out / img_path.name)
 
@@ -76,7 +75,7 @@ class OxfordPetsToYOLO:
                 xml_path,
                 lbl_out / f"{image_id}.txt",
                 img_path,
-                species
+                breed_id
             )
 
             count += 1
@@ -84,7 +83,7 @@ class OxfordPetsToYOLO:
         print(f"✅ {split}: {count} изображений")
 
 
-    def _convert_xml(self, xml_path, out_path, img_path, species):
+    def _convert_xml(self, xml_path, out_path, img_path, breed_id):
 
         tree = ET.parse(xml_path)
         root = tree.getroot()
@@ -94,8 +93,7 @@ class OxfordPetsToYOLO:
 
         lines = []
 
-        # 👉 переводим species → class_id
-        class_id = species - 1  # 1→0 (cat), 2→1 (dog)
+        class_id = breed_id - 1
 
         for obj in root.findall("object"):
             bbox = obj.find("bndbox")
@@ -124,11 +122,11 @@ class OxfordPetsToYOLO:
 train: images/train
 val: images/val
 
-nc: 1
-names: ["pet"]
+nc: 2
+names: ["Abyssinian","American Bulldog","American Pit Bull Terrier","Basset Hound", "Beagle","Bengal","Birman","Bombay","Boxer","British Shorthair", "Chihuahua","Egyptian Mau","English Cocker Spaniel","English Setter", "German Shorthaired","Great Pyrenees","Havanese","Japanese Chin", "Keeshond","Leonberger","Maine Coon","Miniature Pinscher", "Newfoundland","Persian","Pomeranian","Pug","Ragdoll", "Russian Blue","Saint Bernard","Samoyed","Scottish Terrier", "Shiba Inu","Siamese","Sphynx","Staffordshire Bull Terrier", "Wheaten Terrier","Yorkshire Terrier"]
 """
 
         with open(yaml_path, "w") as f:
             f.write(content)
 
-        print(f"📄 dataset.yaml создан: {yaml_path}")
+        print(f"dataset.yaml создан: {yaml_path}")
